@@ -1,7 +1,9 @@
-package consumer;
+package com.RabbitMQConsumer.RabbitMQConsumer.consumer;
 
+import com.RabbitMQConsumer.RabbitMQConsumer.models.UserModel;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -18,7 +20,7 @@ public class RabbitMQConsumer {
         this.javaMailSender = javaMailSender;
     }
 
-    @RabbitListener(queues = {"spring.rabbitmq.queue.1"})
+    @RabbitListener(queues = {"${spring.rabbitmq.queue.1}"})
     public void listenerRegisterQueue(@Payload String message) {
         try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
@@ -26,6 +28,20 @@ public class RabbitMQConsumer {
             mailMessage.setTo(message);
             mailMessage.setSubject("Olá, " + message + ". Seja bem vindo(a)!");
             mailMessage.setText("É um prazer te-lo(a) aqui em nossa plataforma, espero que aproveite bastante!");
+            javaMailSender.send(mailMessage);
+        } catch (MailException me) {
+            System.out.println(me.getMessage());
+        }
+    }
+
+    @RabbitListener(queues = {"${spring.rabbitmq.queue.2}"})
+    public void listenerEditQueue(@Payload UserModel user) {
+        try {
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+            mailMessage.setFrom("gustavoaraujohab@gmail.com");
+            mailMessage.setTo(user.getEmail());
+            mailMessage.setSubject("Edição realizada com sucesso!");
+            mailMessage.setText("Você acabou de realizar a edição de um usuário, agora o usuário está com os dados desta forma: " + user);
             javaMailSender.send(mailMessage);
         } catch (MailException me) {
             System.out.println(me.getMessage());
